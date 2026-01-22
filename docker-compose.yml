@@ -666,6 +666,7 @@ services:
         context: ./postgres
         args:
           - POSTGRES_VERSION=${POSTGRES_VERSION}
+          - POSTGRES_IMAGE_DIGEST=@sha256:860d618299574558f3e0021ada9f039331c97838fec4f6583a8fcbea2df58496
       volumes:
         - ${DATA_PATH_HOST}/postgres:/var/lib/postgresql/data
         - ${POSTGRES_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
