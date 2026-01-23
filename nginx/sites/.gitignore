@@ -1,2 +1,4 @@
 *.conf
 !default.conf
+!api.fieldpulse.local.conf
+!portal.fieldpulse.local.conf
