@@ -28,6 +28,13 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
     PYPPETEER_CHROMIUM_REVISION=588429 \
     PYPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
+# pyppeteer 0.2.5 hard-codes the bundled chrome path and ignores PYPPETEER_EXECUTABLE_PATH.
+# Symlink the expected location to the system Chromium so launch() works on aarch64
+# (Apple Silicon hosts) — the bundled revision is x86_64-only and crashes with
+# "rosetta error" inside an ARM container.
+RUN mkdir -p /root/.local/share/pyppeteer/local-chromium/588429/chrome-linux \
+ && ln -s /usr/bin/chromium /root/.local/share/pyppeteer/local-chromium/588429/chrome-linux/chrome
+
 # Python dependencies (skip gevent/greenlet — unused in codebase, fails to compile)
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --upgrade pip wheel && pip install "setuptools<71" \
