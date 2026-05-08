@@ -647,10 +647,42 @@ services:
       depends_on:
         - php-fpm
       networks:
+        frontend:
+        backend:
+          aliases:
+            - api.fieldpulse.local
+            - devservice.fieldpulse.local
+            - portal.fieldpulse.local
+            - customerportal.fieldpulse.local
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+
+### PDF Generator (fieldpulse-pdf-generator) #################
+    pdf-generator:
+      restart: always
+      build:
+        context: ../fieldpulse-pdf-generator
+        dockerfile: ../laradock-fp/pdf-generator/Dockerfile
+      tty: true
+      stdin_open: true
+      working_dir: /var/www/fieldpulse-pdf-generator
+      # Chromium / Pyppeteer needs more than the docker default 64MB /dev/shm
+      # to spawn tab processes; otherwise launch() crashes with
+      # "Browser closed unexpectedly".
+      shm_size: '2gb'
+      volumes:
+        - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      ports:
+        - "8000:8000"
+        - "6001:6001"
+      environment:
+        - GITHUB_TOKEN=${PDF_GENERATION_APP_GITHUB_TOKEN}
+      depends_on:
+        - postgres
+        - redis
+      networks:
         - frontend
         - backend
-      extra_hosts:
-        - "host.docker.internal:host-gateway"  
 
 ### OpenResty Server #########################################
     openresty:
@@ -989,7 +1021,11 @@ services:
       build: ./redis
       volumes:
         - ${DATA_PATH_HOST}/redis:/data
-      command: --requirepass ${REDIS_PASSWORD}
+      # Auth disabled locally: pdf-generator is the only active Redis consumer
+      # and skipping --requirepass avoids per-service password wiring while
+      # backend_2.0 / master_portal still use file-based cache/session drivers.
+      # Re-enable in environments where any service expects authenticated Redis.
+      # command: --requirepass ${REDIS_PASSWORD}
       ports:
         - "${REDIS_PORT}:6379"
       networks:

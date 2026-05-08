@@ -2,3 +2,6 @@
 !default.conf
 !api.fieldpulse.local.conf
 !portal.fieldpulse.local.conf
+!customerportal.fieldpulse.local.conf
+!devservice.fieldpulse.local.conf
+!payment.fieldpulse.local.conf
